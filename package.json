@@ -1,0 +1,20 @@
+{
+  "name": "view-folder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+		"start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eususu/view-folder.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eususu/view-folder/issues"
+  },
+  "homepage": "https://github.com/eususu/view-folder#readme"
+}
