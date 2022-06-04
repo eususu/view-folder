@@ -1,22 +1,29 @@
-struct View<'a> {
-	dest_base: &'a str
+struct View {
+	dest_base: String
 }
 
-impl <'a>View {
-	pub fn new(dest_base: &str) -> Self {
+impl View {
+	pub fn new(dest_base: String) -> Self {
 		Self {
 			dest_base,
 		}
 	}
+
+	pub fn add_target(&self, _target: String) {
+
+		println!("{}", self.dest_base);
+	}
 }
 
 fn main() {
-	let output:&str = "output/test.md";
-	let target1:&str ="/Users/lovian/my/gift-account/test.md";
+	let output = String::from("output/test.md");
+	let target1 = String::from("/Users/lovian/my/gift-account/test.md");
 
 	println!("Hello, world!");
 
 	let v = View::new(output);
+
+	v.add_target(target1);
 
 
 }
