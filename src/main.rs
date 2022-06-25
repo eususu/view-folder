@@ -14,9 +14,14 @@ impl View {
 		}
 	}
 
+	pub fn add_directory(&self, _dir: &str) -> std::io::Result<()> {
+		// trace directory
+		Ok(())
+	}
+
 	pub fn add_target(&self, _target: String) -> std::io::Result<()> {
 
-		println!("{}", self.dest_base);
+		println!("#destination path: {}", self.dest_base);
 
 		let path = Path::new(&_target);
 
@@ -24,7 +29,7 @@ impl View {
 		let f = path.file_stem().unwrap().to_str().unwrap();
 		let ext = path.extension().unwrap().to_str().unwrap();
 
-		println!("{}.{}", f, ext);
+		println!("#file: {}.{}", f, ext);
 
 		// make link
 		let mut p = PathBuf::new();
@@ -33,7 +38,7 @@ impl View {
 		file.set_file_name(format!("{}.{}", f, ext));
 		p.push(file.as_path());
 
-		println!("TRY path = {}", p.to_str().unwrap());
+		println!("#TRY path = {}", p.to_str().unwrap());
 		match fs::symlink(path, p) {
 			Ok(_b) => Ok(()),
 			Err(_error) => Ok(())
@@ -43,12 +48,14 @@ impl View {
 
 fn main() -> std::io::Result<()> {
 	let output = String::from("output");
-	let target1 = String::from("./example/test1.md");
-	let target2 = String::from("./example/test2.md");
+	let target1 = String::from("../example/test1.md");
+	let target2 = String::from("../example/test2.md");
 
-	println!("Hello, world!");
+
+
 
 	let v = View::new(output);
+	v.add_directory("example");
 
 	v.add_target(target1)?;
 	println!("-------------------");
