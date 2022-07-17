@@ -16,6 +16,23 @@ impl View {
 
 	pub fn add_directory(&self, _dir: &str) -> std::io::Result<()> {
 		// trace directory
+		let base_path = Path::new(_dir);
+
+		println!(">>>>>>>>>> {:?}", base_path.to_str());
+
+		for entry in base_path.read_dir().expect("read_dir failed") {
+			if let Ok(entry) = entry {
+				if entry.path().is_dir() {
+					self.add_directory(entry.path().to_str().unwrap());
+				} else {
+
+					println!("link >> {:?}", entry);
+				}
+
+
+				println!(">> entry={:?}", entry.path());
+			}
+		}
 		Ok(())
 	}
 
