@@ -14,7 +14,7 @@ impl View {
 		}
 	}
 
-	fn trace_directory(&self, _dest: & mut PathBuf, _dir: & PathBuf) -> std::io::Result<()> {
+	fn trace_directory(&self, _dest: & PathBuf, _dir: & PathBuf) -> std::io::Result<()> {
 		let mut dest = PathBuf::from(_dest.as_path());
 		let mut list = _dir.components();
 		let is_file = _dir.is_file();
@@ -56,9 +56,9 @@ impl View {
 
 		for entry in base_path.read_dir().expect("read_dir failed") {
 			if let Ok(entry) = entry {
-				let mut target = PathBuf::from(self.dest_base.to_string());
+				let target = PathBuf::from(self.dest_base.to_string());
 
-				self.trace_directory(& mut target, &entry.path())?;
+				self.trace_directory(&target, &entry.path())?;
 				if entry.path().is_dir() {
 					self.add_directory(entry.path().to_str().unwrap())?;
 				}
