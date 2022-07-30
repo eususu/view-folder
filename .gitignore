@@ -108,6 +108,9 @@ dist
 
 /target
 
+# OSX
+.DS_Store
+
 
 # for this project
 output
