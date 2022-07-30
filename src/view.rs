@@ -1,6 +1,5 @@
+use std::ffi::OsString;
 use std::path::PathBuf;
-use std::os::unix::fs;
-
 
 #[derive(Copy, Clone)]
 pub struct Statistics {
@@ -9,45 +8,55 @@ pub struct Statistics {
 }
 
 pub struct View {
-	dest_base: String,
-  include_extensions: Vec<String>,
-
+	dest_base: PathBuf,
+  include_extensions: Vec<OsString>,
+  verbose: bool,
   links: u64,
   dirs: u64
 }
 
 impl View {
-	pub fn new(dest_base: String) -> View {
+	pub fn new(dest_base: PathBuf) -> View {
 
-    let v: Vec<String> = Vec::new();
+    let v: Vec<OsString> = Vec::new();
 		View {
 			dest_base,
       include_extensions: v,
+      verbose: false,
       links:0, dirs:0
 		}
 	}
 
+  pub fn set_verbose(&mut self, _verbose:bool) {
+    self.verbose = _verbose;
+  }
+
   pub fn add_include_extension(&mut self, _ext: &str) {
-    self.include_extensions.push(_ext.to_string());
+    self.include_extensions.push(OsString::from(_ext));
   }
 
   fn link(&mut self, _target: &PathBuf, _source: & PathBuf) -> std::io::Result<()>  {
-    let ext: String;
+    let ext: OsString;
     match _target.extension() {
       None => {
-        ext = String::from("");
+        ext = OsString::from("");
       },
       _ => {
-        ext = String::from(_target.extension().unwrap().to_str().unwrap());
+        ext = _target.extension().unwrap().to_os_string();
       }
     }
     if !self.include_extensions.contains(&ext) {
-      //println!("NOT INCLUDE {:?}", _dir.extension());
+      if self.verbose {
+        println!("NOT INCLUDE file {:?}", _target);
+      }
       return Ok(())
     }
     self.links += 1;
 
     if _target.exists() {
+      if self.verbose {
+        println!("REMOVE FILE becauseof relinking ({:?})", _target);
+      }
       // re link
       std::fs::remove_file(_target)?;
     }
@@ -80,7 +89,7 @@ impl View {
     Ok(())
   }
 
-	pub fn add_directory(&mut self, _dir: &str) -> std::io::Result<()> {
+	pub fn add_directory(&mut self, _dir: PathBuf) -> std::io::Result<()> {
     let b = PathBuf::from(_dir);
     let p = PathBuf::from(&self.dest_base);
 

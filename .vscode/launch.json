@@ -12,14 +12,14 @@
         "args": [
           "build",
           "--bin=view-folder",
-          "--package=view-folder"
+          "--package=view-folder",
         ],
         "filter": {
           "name": "view-folder",
           "kind": "bin"
         }
       },
-      "args": [],
+      "args": ["-d", "output","example"],
       "cwd": "${workspaceFolder}"
     },
     {
