@@ -1,10 +1,19 @@
-use std::path::{Path};
 use std::path::PathBuf;
 use std::os::unix::fs;
 
+
+#[derive(Copy, Clone)]
+pub struct Statistics {
+  pub links: u64,
+  pub dirs: u64,
+}
+
 pub struct View {
 	dest_base: String,
-  include_extensions: Vec<String>
+  include_extensions: Vec<String>,
+
+  links: u64,
+  dirs: u64
 }
 
 impl View {
@@ -13,73 +22,75 @@ impl View {
     let v: Vec<String> = Vec::new();
 		View {
 			dest_base,
-      include_extensions: v
+      include_extensions: v,
+      links:0, dirs:0
 		}
 	}
 
   pub fn add_include_extension(&mut self, _ext: &str) {
     self.include_extensions.push(_ext.to_string());
-    //self.include_extensions.push(String::from(_ext))
   }
 
-	fn trace_directory(&self, _dest: & PathBuf, _dir: & PathBuf) -> std::io::Result<()> {
-		let mut dest = PathBuf::from(_dest.as_path());
-		let mut list = _dir.components();
-		let is_file = _dir.is_file();
-
-		let mut filename = "";
-		if is_file {
-
-      let ext = String::from(_dir.extension().unwrap().to_str().unwrap());
-
-      if !self.include_extensions.contains(&ext) {
-        //println!("NOT INCLUDE {:?}", _dir.extension());
-        return Ok(())
+  fn link(&mut self, _target: &PathBuf, _source: & PathBuf) -> std::io::Result<()>  {
+    let ext: String;
+    match _target.extension() {
+      None => {
+        ext = String::from("");
+      },
+      _ => {
+        ext = String::from(_target.extension().unwrap().to_str().unwrap());
       }
+    }
+    if !self.include_extensions.contains(&ext) {
+      //println!("NOT INCLUDE {:?}", _dir.extension());
+      return Ok(())
+    }
+    self.links += 1;
 
-			filename = _dir.file_name().unwrap().to_str().unwrap();
-		};
+    if _target.exists() {
+      // re link
+      std::fs::remove_file(_target)?;
+    }
 
-		// bypass root dir
-		list.next();
+    //fs::symlink(_source, _target)
+    std::fs::hard_link(_source, _target)
+  }
 
-		for p in list {
-			if is_file {
-				if p.as_os_str() == filename {
-				dest.push(p);
-					dest.set_file_name(&filename);
-					break;
-				}
-			}
-			dest.push(p);
+  fn recurse(&mut self, _target: &PathBuf, _source: & PathBuf) -> std::io::Result<()> {
+    // if source is file
+    // if source is directory
+    for entry in _source.read_dir().expect("read dir fail") {
+      if let Ok(entry) = entry {
 
-			if !dest.exists() {
-				std::fs::create_dir(&dest)?;
-			}
-		}
+        let mut new_target = PathBuf::from(_target);
+        new_target.push(entry.file_name());
+        if entry.path().is_dir() {
+          self.recurse(&new_target, &entry.path())?;
+        } else {
+          if !_target.exists() {
+            self.dirs += 1;
+            std::fs::create_dir_all(&_target)?;
+          }
 
-		if is_file && !dest.exists() {
-			println!("LINK {:?} ============ {:?}", dest, _dir);
-			let cdir = std::fs::canonicalize(&_dir)?;
-			fs::symlink(&cdir, dest)?;
-		}
-		Ok(())
+          self.link(&new_target, &entry.path())?;
+        }
+
+      }
+    }
+    Ok(())
+  }
+
+	pub fn add_directory(&mut self, _dir: &str) -> std::io::Result<()> {
+    let b = PathBuf::from(_dir);
+    let p = PathBuf::from(&self.dest_base);
+
+    self.recurse(&p, &b)
 	}
 
-	pub fn add_directory(&self, _dir: &str) -> std::io::Result<()> {
-		// trace directory
-		let base_path = Path::new(_dir);
-
-		for entry in base_path.read_dir().expect("read_dir failed") {
-			if let Ok(entry) = entry {
-				let target = PathBuf::from(self.dest_base.to_string());
-
-				self.trace_directory(&target, &entry.path())?;
-				if entry.path().is_dir() {
-					self.add_directory(entry.path().to_str().unwrap())?;
-				}
-			}
-		}
-		Ok(())
-	}
+  pub fn get_stat(&self) -> std::io::Result<Statistics> {
+    Ok(Statistics{
+      dirs: self.dirs,
+      links: self.links
+    })
+  }
 }

@@ -107,3 +107,7 @@ dist
 # Added by cargo
 
 /target
+
+
+# for this project
+output
