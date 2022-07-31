@@ -17,11 +17,9 @@ pub struct View {
 
 impl View {
 	pub fn new(dest_base: PathBuf) -> View {
-
-    let v: Vec<OsString> = Vec::new();
 		View {
 			dest_base,
-      include_extensions: v,
+      include_extensions: Vec::new(),
       verbose: false,
       links:0, dirs:0
 		}
@@ -36,15 +34,11 @@ impl View {
   }
 
   fn link(&mut self, _target: &PathBuf, _source: & PathBuf) -> std::io::Result<()>  {
-    let ext: OsString;
-    match _target.extension() {
-      None => {
-        ext = OsString::from("");
-      },
-      _ => {
-        ext = _target.extension().unwrap().to_os_string();
-      }
-    }
+    let ext: OsString = if _target.extension().is_none() {
+      OsString::from("")
+      } else {
+        _target.extension().unwrap().to_os_string()
+      };
     if !self.include_extensions.contains(&ext) {
       if self.verbose {
         println!("NOT INCLUDE file {:?}", _target);
@@ -89,7 +83,7 @@ impl View {
     Ok(())
   }
 
-	pub fn add_directory(&mut self, _dir: PathBuf) -> std::io::Result<()> {
+	pub fn add_directory(&mut self, _dir: &PathBuf) -> std::io::Result<()> {
     let b = PathBuf::from(_dir);
     let p = PathBuf::from(&self.dest_base);
 
