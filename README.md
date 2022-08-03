@@ -1,5 +1,5 @@
 # view-folder
-> Command Line Tool for Duplicate Folder and Link file with extension
+> Command Line Tool for Duplicate Folder(Sturcture) and Link file with extension
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](LICENSE-APACHE) [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE-MIT)
 
