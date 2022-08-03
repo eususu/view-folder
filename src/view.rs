@@ -1,5 +1,6 @@
 use std::ffi::OsString;
 use std::path::PathBuf;
+use symlink::symlink_auto;
 
 #[derive(Copy, Clone)]
 pub struct Statistics {
@@ -10,6 +11,7 @@ pub struct Statistics {
 pub struct View {
 	dest_base: PathBuf,
   include_extensions: Vec<OsString>,
+  symbolic: bool,
   verbose: bool,
   links: u64,
   dirs: u64
@@ -20,10 +22,15 @@ impl View {
 		View {
 			dest_base,
       include_extensions: Vec::new(),
+      symbolic: true,
       verbose: false,
       links:0, dirs:0
 		}
 	}
+
+  pub fn set_symbolic(&mut self, _symbolic: bool) {
+    self.symbolic = _symbolic
+  }
 
   pub fn set_verbose(&mut self, _verbose:bool) {
     self.verbose = _verbose;
@@ -55,8 +62,11 @@ impl View {
       std::fs::remove_file(_target)?;
     }
 
-    //fs::symlink(_source, _target)
-    std::fs::hard_link(_source, _target)
+    if self.symbolic {
+      symlink_auto(_source, _target)
+    } else {
+      std::fs::hard_link(_source, _target)
+    }
   }
 
   fn recurse(&mut self, _target: &PathBuf, _source: & PathBuf) -> std::io::Result<()> {
